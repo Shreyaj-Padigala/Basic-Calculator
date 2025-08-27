@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevCalc - Calculator for Software Development</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            background: linear-gradient(135deg, #1e1e1e 0%, #2d2d2d 50%, #1a1a1a 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 30% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 80%, rgba(255, 64, 129, 0.2) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .hero-content {
+            z-index: 2;
+            max-width: 800px;
+            padding: 0 20px;
+            animation: fadeInUp 1.2s ease-out;
+        }
+
+        .hero h1 {
+            font-size: clamp(3rem, 8vw, 6rem);
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 20px;
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+        }
+
+        .hero .subtitle {
+            font-size: clamp(1.2rem, 3vw, 2rem);
+            color: #a1a1aa;
+            margin-bottom: 40px;
+            font-weight: 400;
+        }
+
+        .cta-button {
+            display: inline-flex;
+            align-items: center;
+            padding: 16px 32px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: bounce 2s infinite;
+        }
+
+        .scroll-arrow {
+            width: 24px;
+            height: 24px;
+            border: 2px solid #a1a1aa;
+            border-top: none;
+            border-left: none;
+            transform: rotate(45deg);
+        }
+
+        /* Calculator Section */
+        .calculator-section {
+            min-height: 100vh;
+            background: #f5f5f7;
+            padding: 100px 20px;
+            position: relative;
+        }
+
+        .section-header {
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto 80px;
+        }
+
+        .section-header h2 {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 700;
+            color: #1d1d1f;
+            margin-bottom: 20px;
+            letter-spacing: -0.02em;
+        }
+
+        .section-header p {
+            font-size: clamp(1.1rem, 2.5vw, 1.4rem);
+            color: #6e6e73;
+            font-weight: 400;
+        }
+
+        .calculator-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+        }
+
+        .calc-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 32px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .calc-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .calc-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15);
+        }
+
+        .calc-card h3 {
+            color: #1d1d1f;
+            margin-bottom: 24px;
+            font-size: 1.5em;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #1d1d1f;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 16px 20px;
+            border: 2px solid #e5e5e7;
+            border-radius: 12px;
+            font-size: 16px;
+            background: #ffffff;
+            transition: all 0.3s ease;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+
+        .input-group select {
+            background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 5"><path fill="%23666" d="M2 0L0 2h4zm0 5L0 3h4z"/></svg>');
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            background-size: 12px;
+            padding-right: 40px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .result {
+            background: linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%);
+            border: 2px solid #e0e7ff;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Roboto Mono', monospace;
+            font-size: 16px;
+            font-weight: 500;
+            color: #1e1b4b;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            word-break: break-all;
+            white-space: pre-line;
+            transition: all 0.3s ease;
+        }
+
+        .result.error {
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+            border-color: #fecaca;
+            color: #991b1b;
+        }
+
+        .two-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        /* Custom root group animation */
+        #custom-root-group {
+            opacity: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        #custom-root-group.show {
+            opacity: 1;
+            max-height: 100px;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateX(-50%) translateY(0);
+            }
+            40% {
+                transform: translateX(-50%) translateY(-10px);
+            }
+            60% {
+                transform: translateX(-50%) translateY(-5px);
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .calculator-container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .two-inputs {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            
+            .calc-card {
+                padding: 24px;
+            }
+            
+            .calculator-section {
+                padding: 60px 20px;
+            }
+            
+            .section-header {
+                margin-bottom: 60px;
+            }
+        }
+
+        /* Intersection Observer Animation */
+        .calc-card {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+
+        .calc-card.animate {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>DevCalc</h1>
+            <p class="subtitle">Calculator that aids software development</p>
+            <a href="#calculator" class="cta-button">Start Calculating</a>
+        </div>
+        <div class="scroll-indicator">
+            <div class="scroll-arrow"></div>
+        </div>
+    </section>
+
+    <!-- Calculator Section -->
+    <section id="calculator" class="calculator-section">
+        <div class="section-header">
+            <h2>Powerful Tools</h2>
+            <p>Everything you need for mathematical calculations in development</p>
+        </div>
+
+        <div class="calculator-container">
+            <!-- Basic Operations -->
+            <div class="calc-card">
+                <h3>Basic Operations</h3>
+                <div class="two-inputs">
+                    <div class="input-group">
+                        <label>First Number</label>
+                        <input type="number" id="basic-num1" placeholder="0" step="any">
+                    </div>
+                    <div class="input-group">
+                        <label>Second Number</label>
+                        <input type="number" id="basic-num2" placeholder="0" step="any">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Operation</label>
+                    <select id="basic-operation">
+                        <option value="add">Addition (+)</option>
+                        <option value="subtract">Subtraction (-)</option>
+                        <option value="multiply">Multiplication (×)</option>
+                        <option value="divide">Division (÷)</option>
+                        <option value="power">Exponentiation (^)</option>
+                        <option value="modulus">Modulus (%)</option>
+                    </select>
+                </div>
+                <button class="btn" onclick="calculateBasic()">Calculate</button>
+                <div id="basic-result" class="result">Ready to calculate</div>
+            </div>
+
+            <!-- Roots -->
+            <div class="calc-card">
+                <h3>Root Operations</h3>
+                <div class="input-group">
+                    <label>Number</label>
+                    <input type="number" id="root-number" placeholder="0" step="any">
+                </div>
+                <div class="input-group">
+                    <label>Root Type</label>
+                    <select id="root-type">
+                        <option value="sqrt">Square Root (√)</option>
+                        <option value="cbrt">Cube Root (∛)</option>
+                        <option value="custom">Custom Root</option>
+                    </select>
+                </div>
+                <div class="input-group" id="custom-root-group">
+                    <label>Root Value</label>
+                    <input type="number" id="custom-root" placeholder="2" step="any" min="1">
+                </div>
+                <button class="btn" onclick="calculateRoot()">Calculate Root</button>
+                <div id="root-result" class="result">Ready to calculate</div>
+            </div>
+
+            <!-- Binary Conversion -->
+            <div class="calc-card">
+                <h3>Binary Conversion</h3>
+                <div class="input-group">
+                    <label>Enter Number</label>
+                    <input type="number" id="convert-number" placeholder="0" step="any">
+                </div>
+                <button class="btn" onclick="convertNumber()">Convert to Binary</button>
+                <div id="convert-result" class="result">Ready to convert</div>
+            </div>
+
+            <!-- Scientific Notation -->
+            <div class="calc-card">
+                <h3>Scientific Notation</h3>
+                <div class="input-group">
+                    <label>Enter Number</label>
+                    <input type="number" id="scientific-number" placeholder="0" step="any">
+                </div>
+                <div class="input-group">
+                    <label>Decimal Places</label>
+                    <input type="number" id="scientific-precision" placeholder="Auto" min="0" max="15">
+                </div>
+                <button class="btn" onclick="convertToScientific()">Convert to Scientific</button>
+                <div id="scientific-result" class="result">Ready to convert</div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Smooth scrolling and animations
+        document.addEventListener('DOMContentLoaded', function() {
+            // Intersection Observer for card animations
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry, index) => {
+                    if (entry.isIntersecting) {
+                        setTimeout(() => {
+                            entry.target.classList.add('animate');
+                        }, index * 100);
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            document.querySelectorAll('.calc-card').forEach(card => {
+                observer.observe(card);
+            });
+
+            // Custom root group toggle
+            document.getElementById('root-type').addEventListener('change', function() {
+                const customGroup = document.getElementById('custom-root-group');
+                if (this.value === 'custom') {
+                    customGroup.classList.add('show');
+                } else {
+                    customGroup.classList.remove('show');
+                }
+            });
+        });
+
+        function displayResult(elementId, result, isError = false) {
+            const element = document.getElementById(elementId);
+            element.textContent = result;
+            element.className = isError ? 'result error' : 'result';
+            
+            // Add a subtle animation
+            element.style.transform = 'scale(1.02)';
+            setTimeout(() => {
+                element.style.transform = 'scale(1)';
+            }, 200);
+        }
+
+        function calculateBasic() {
+            const num1 = parseFloat(document.getElementById('basic-num1').value);
+            const num2 = parseFloat(document.getElementById('basic-num2').value);
+            const operation = document.getElementById('basic-operation').value;
+
+            if (isNaN(num1) || isNaN(num2)) {
+                displayResult('basic-result', 'Error: Please enter valid numbers', true);
+                return;
+            }
+
+            let result;
+            try {
+                switch (operation) {
+                    case 'add':
+                        result = num1 + num2;
+                        break;
+                    case 'subtract':
+                        result = num1 - num2;
+                        break;
+                    case 'multiply':
+                        result = num1 * num2;
+                        break;
+                    case 'divide':
+                        if (num2 === 0) {
+                            displayResult('basic-result', 'Error: Cannot divide by zero', true);
+                            return;
+                        }
+                        result = num1 / num2;
+                        break;
+                    case 'power':
+                        result = Math.pow(num1, num2);
+                        break;
+                    case 'modulus':
+                        if (num2 === 0) {
+                            displayResult('basic-result', 'Error: Cannot calculate modulus with zero', true);
+                            return;
+                        }
+                        result = num1 % num2;
+                        break;
+                }
+
+                if (!isFinite(result)) {
+                    displayResult('basic-result', 'Error: Result is infinite or undefined', true);
+                    return;
+                }
+
+                displayResult('basic-result', `${result}`);
+            } catch (error) {
+                displayResult('basic-result', `Error: ${error.message}`, true);
+            }
+        }
+
+        function calculateRoot() {
+            const number = parseFloat(document.getElementById('root-number').value);
+            const rootType = document.getElementById('root-type').value;
+
+            if (isNaN(number)) {
+                displayResult('root-result', 'Error: Please enter a valid number', true);
+                return;
+            }
+
+            let result;
+            try {
+                switch (rootType) {
+                    case 'sqrt':
+                        if (number < 0) {
+                            displayResult('root-result', 'Error: Cannot calculate square root of negative number', true);
+                            return;
+                        }
+                        result = Math.sqrt(number);
+                        break;
+                    case 'cbrt':
+                        result = Math.cbrt(number);
+                        break;
+                    case 'custom':
+                        const rootValue = parseFloat(document.getElementById('custom-root').value);
+                        if (isNaN(rootValue) || rootValue <= 0) {
+                            displayResult('root-result', 'Error: Please enter a valid positive root value', true);
+                            return;
+                        }
+                        if (number < 0 && rootValue % 2 === 0) {
+                            displayResult('root-result', 'Error: Cannot calculate even root of negative number', true);
+                            return;
+                        }
+                        result = Math.pow(number, 1/rootValue);
+                        break;
+                }
+
+                if (!isFinite(result)) {
+                    displayResult('root-result', 'Error: Result is infinite or undefined', true);
+                    return;
+                }
+
+                displayResult('root-result', `${result}`);
+            } catch (error) {
+                displayResult('root-result', `Error: ${error.message}`, true);
+            }
+        }
+
+        function convertNumber() {
+            const number = parseFloat(document.getElementById('convert-number').value);
+
+            if (isNaN(number)) {
+                displayResult('convert-result', 'Error: Please enter a valid number', true);
+                return;
+            }
+
+            try {
+                const intNumber = Math.floor(Math.abs(number));
+                const binary = intNumber.toString(2);
+                const result = `${number < 0 ? '-' : ''}${binary}`;
+
+                displayResult('convert-result', result);
+            } catch (error) {
+                displayResult('convert-result', `Error: ${error.message}`, true);
+            }
+        }
+
+        function convertToScientific() {
+            const number = parseFloat(document.getElementById('scientific-number').value);
+            const precision = parseInt(document.getElementById('scientific-precision').value);
+
+            if (isNaN(number)) {
+                displayResult('scientific-result', 'Error: Please enter a valid number', true);
+                return;
+            }
+
+            if (number === 0) {
+                displayResult('scientific-result', '0.0 × 10⁰');
+                return;
+            }
+
+            try {
+                let result;
+                if (isNaN(precision)) {
+                    result = number.toExponential();
+                } else {
+                    result = number.toExponential(precision);
+                }
+
+                const formatted = result.replace('e+', ' × 10^').replace('e-', ' × 10^-').replace('e', ' × 10^');
+                displayResult('scientific-result', formatted);
+            } catch (error) {
+                displayResult('scientific-result', `Error: ${error.message}`, true);
+            }
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                const activeElement = document.activeElement;
+                
+                if (activeElement.id.startsWith('basic-')) {
+                    calculateBasic();
+                } else if (activeElement.id.startsWith('root-')) {
+                    calculateRoot();
+                } else if (activeElement.id.startsWith('convert-')) {
+                    convertNumber();
+                } else if (activeElement.id.startsWith('scientific-')) {
+                    convertToScientific();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
